@@ -13,7 +13,7 @@ Open `http://localhost:4175`.
 
 ## Publish a desktop release
 
-1. Upload the signed macOS DMG and Linux AppImage into `website/releases/`, or replace their URLs with your release-hosting URLs.
+1. Publish signed artifacts through the public release repository and use their immutable versioned URLs in `website/releases/latest.json`.
 2. Add each artifact's SHA256 to `website/releases/latest.json`.
 3. Set the platform's `available` value to `true`.
 4. Deploy the contents of `website/` to any static host.

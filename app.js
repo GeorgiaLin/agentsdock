@@ -16,8 +16,7 @@ async function loadRelease() {
   } catch {
     release = fallbackRelease
   }
-  const releaseVersion = document.querySelector('#release-version')
-  if (releaseVersion) releaseVersion.textContent = release.version ? `Version ${release.version}` : 'Private preview'
+  document.querySelector('#release-version').textContent = release.version ? `Version ${release.version}` : 'Private preview'
   updatePlatform('macos')
   updatePlatform('linux')
 }
@@ -30,6 +29,8 @@ function updatePlatform(platform) {
     button.dataset.status = entry.label || ''
     if (entry.available) button.setAttribute('aria-label', `Download AgentsDock ${entry.version || release.version} for ${platform}`)
   })
+  const checksum = document.querySelector(`#${platform}-checksum`)
+  if (checksum && entry.sha256) checksum.textContent = `SHA256 ${entry.sha256}`
 }
 
 document.addEventListener('click', event => {
