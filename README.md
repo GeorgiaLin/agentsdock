@@ -1,18 +1,21 @@
-# AgentsDock (website mirror)
+# AgentsDock website
 
-A corporate-accessible static mirror of the AgentsDock product site, for viewing when the primary domain isn't reachable from a restricted network.
+Static product and download site for AgentsDock.
 
-- **Live site:** https://agentsdock.net
-- **Source:** this mirror is a snapshot of the `website/` directory from [ZhengyiLuo/AgentsDock](https://github.com/ZhengyiLuo/AgentsDock) (`website-georgia` branch) — make changes there, not in this repo.
-
-![AgentsDock desktop app showing a live Codex agent session](assets/app-desktop.png)
-
-AgentsDock connects to an AgentsServer that you run and control, so you can chat with Codex or Claude from your desktop or phone, from anywhere.
-
-## Preview locally
+## Preview
 
 ```bash
-npx serve .
+cd website
+npm run dev
 ```
 
-This is a snapshot of static files (HTML/CSS/JS) — no build step required.
+Open `http://localhost:4175`.
+
+## Publish a desktop release
+
+1. Upload the signed macOS DMG and Linux AppImage into `website/releases/`, or replace their URLs with your release-hosting URLs.
+2. Add each artifact's SHA256 to `website/releases/latest.json`.
+3. Set the platform's `available` value to `true`.
+4. Deploy the contents of `website/` to any static host.
+
+The UI reads `releases/latest.json` at runtime, so releases do not require rebuilding the website.
