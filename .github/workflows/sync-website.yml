@@ -1,0 +1,56 @@
+name: Sync website from website-georgia
+
+# Keeps this repo (which serves agentsdock.net) equal to the website/ folder of
+# ZhengyiLuo/AgentsDock on the website-georgia branch. Runs every 10 minutes and
+# on demand; commits only when something changed.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-website
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v4
+
+      - name: Fetch upstream website-georgia
+        run: git clone --quiet --depth 1 --branch website-georgia https://github.com/ZhengyiLuo/AgentsDock.git /tmp/upstream
+
+      - name: Copy website/ into the site root
+        run: |
+          set -euo pipefail
+          rsync -a --delete --exclude .git --exclude .github --exclude fonts.html /tmp/upstream/website/ ./
+          test "$(tr -d '\r\n' < CNAME)" = "agentsdock.net"
+          test -s index.html && test -s styles.css
+          # Absolute canonical URL per page, so search engines index the custom domain.
+          python3 - <<'PY'
+          import glob, re
+          for f in glob.glob("*.html") + glob.glob("zh/*.html"):
+              s = open(f).read()
+              s = re.sub(r'\s*<link rel="canonical"[^>]*>', "", s)
+              s = s.replace('<meta name="theme-color"',
+                            '<link rel="canonical" href="https://agentsdock.net/%s" />\n    <meta name="theme-color"' % f, 1)
+              open(f, "w").write(s)
+          PY
+
+      - name: Commit and push if anything changed
+        run: |
+          set -euo pipefail
+          git config user.name "agentsdock-sync"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          up=$(git -C /tmp/upstream rev-parse --short HEAD)
+          git commit -q -m "Sync website from ZhengyiLuo/AgentsDock@${up} (website-georgia)"
+          git push
+          echo "Synced ${up}."
